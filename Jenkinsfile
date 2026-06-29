@@ -12,11 +12,12 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    def VERSION = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                    // store VERSION in global env so other stages can use it
+                    env.VERSION = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
 
                     sh """
-                        docker build -t food-delivery-backend:${VERSION} .
-                        docker tag food-delivery-backend:${VERSION} food-delivery-backend:latest
+                        docker build -t food-delivery-backend:${env.VERSION} .
+                        docker tag food-delivery-backend:${env.VERSION} food-delivery-backend:latest
                     """
                 }
             }
@@ -25,7 +26,7 @@ pipeline {
         stage('Push Image') {
             steps {
                 sh """
-                    docker push food-delivery-backend:${VERSION}
+                    docker push food-delivery-backend:${env.VERSION}
                     docker push food-delivery-backend:latest
                 """
             }
