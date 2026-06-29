@@ -1,40 +1,34 @@
 pipeline {
-
     agent any
-
-    tools {
-        maven 'Maven'
-    }
 
     stages {
 
         stage('Checkout') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/swatipy/food-delivery-backend.git'
+                git branch: 'main', url: 'https://github.com/your-repo.git'
             }
         }
-
-
-        stage('Build') {
-            steps {
-                sh 'mvn clean package -DskipTests'
-            }
-        }
-
-
-        stage('Test') {
-            steps {
-                sh 'mvn test'
-            }
-        }
-
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t food-delivery-backend .'
+                script {
+                    def VERSION = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+
+                    sh """
+                        docker build -t food-delivery-backend:${VERSION} .
+                        docker tag food-delivery-backend:${VERSION} food-delivery-backend:latest
+                    """
+                }
             }
         }
 
+        stage('Push Image') {
+            steps {
+                sh """
+                    docker push food-delivery-backend:${VERSION}
+                    docker push food-delivery-backend:latest
+                """
+            }
+        }
     }
 }
