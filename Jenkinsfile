@@ -13,13 +13,21 @@ pipeline {
             }
         }
 
+        stage('Build JAR') {
+            steps {
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 script {
                     env.VERSION = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
 
                     sh """
-                        docker build --platform linux/amd64 -t ${IMAGE_NAME}:${env.VERSION} .
+                        docker build --platform linux/amd64 \
+                            -t ${IMAGE_NAME}:${env.VERSION} .
+
                         docker tag ${IMAGE_NAME}:${env.VERSION} ${IMAGE_NAME}:latest
                     """
                 }
@@ -48,12 +56,13 @@ pipeline {
                 """
             }
         }
+
         stage('Deploy to EC2') {
             steps {
                 sshagent(credentials: ['ec2-ssh-key']) {
                     sh """
                         ssh -o StrictHostKeyChecking=no ec2-user@3.15.207.131 '
-                            docker pull swatigup/food-delivery-backend:${VERSION}
+                            docker pull ${IMAGE_NAME}:${env.VERSION}
 
                             docker stop food-delivery-backend || true
                             docker rm food-delivery-backend || true
@@ -61,7 +70,7 @@ pipeline {
                             docker run -d \
                               --name food-delivery-backend \
                               -p 8080:8080 \
-                              swatigup/food-delivery-backend:${VERSION}
+                              ${IMAGE_NAME}:${env.VERSION}
                         '
                     """
                 }
