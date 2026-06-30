@@ -24,11 +24,13 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
+                cleanWs()
+
                 script {
                     env.VERSION = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
 
                     sh """
-                        docker build --platform linux/amd64 \
+                        docker build --no-cache --platform linux/amd64 \
                             -t ${IMAGE_NAME}:${env.VERSION} .
 
                         docker tag ${IMAGE_NAME}:${env.VERSION} ${IMAGE_NAME}:latest
