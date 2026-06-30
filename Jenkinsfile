@@ -24,7 +24,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                cleanWs()
+
 
                 script {
                     env.VERSION = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
