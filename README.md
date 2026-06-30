@@ -14,8 +14,7 @@ java -jar target/food-delivery-0.0.1-SNAPSHOT.jar \
 docker build -t food-delivery-service .
 
 docker run -p 8080:8080 \
---add-host=host.docker.internal:host-gateway \
 -e SPRING_PROFILES_ACTIVE=docker \
-food-delivery-service
+food-delivery-backend:latest
 
 ### EC2 Build and run 
