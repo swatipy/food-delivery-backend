@@ -14,9 +14,12 @@ pipeline {
         }
 
         stage('Build JAR') {
-            steps {
-                sh 'mvn clean package -DskipTests'
-            }
+                tools {
+                    maven 'MAVEN_HOME'
+                }
+                steps {
+                    sh 'mvn clean package -DskipTests'
+                }
         }
 
         stage('Build Docker Image') {
